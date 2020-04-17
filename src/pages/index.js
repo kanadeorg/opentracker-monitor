@@ -3,7 +3,8 @@ import { Link } from "gatsby"
 import Container from '@material-ui/core/Container';
 import { makeStyles, createStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import { Button } from "@material-ui/core"
+import { Button, Input } from "@material-ui/core"
+import Slider from '@material-ui/core/Slider';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
@@ -26,14 +27,45 @@ class index extends Component {
     this.state = {
       isLoading:true,
       stats:null,
+      delay: 5000
     }
+  }
+  tick = ()=>{
+    var parseString = require('xml2js').parseString;
+    axios.get('').then(response => {
+      parseString(response.data, (err, result)=>{
+        this.setState({
+          stats:result
+        });
+      });
+    })
+  }
+  updateInterval = (event, value) =>{
+    if(value==0){
+      this.setState({
+        delay:11451400,
+      });
+    }else{
+      this.setState({
+        delay:value*1000
+      })
+    }
+  }
+  componentDidUpdate(prevProps, prevState){
+    if(prevState.delay!=this.state.delay){
+      clearInterval(this.interval);
+      this.interval = setInterval(this.tick, this.state.delay);
+    }
+  }
+  componentWillUnmount(){
+    clearInterval(this.interval);
   }
   componentDidMount(){
     var parseString = require('xml2js').parseString;
+    this.interval = setInterval(this.tick, this.state.delay);
     //set your url here
-    axios.get('')
-      .then(response => {
-        parseString(response.data, (err, result)=>  {
+    axios.get('').then(response => {
+        parseString(response.data, (err, result)=>{
           console.log(result);
           this.setState({
             isLoading:false,
@@ -42,6 +74,9 @@ class index extends Component {
         });
       })
     }
+  valuetext = (value)=>{
+    return `${value}(s) 秒`
+  }
   render() {
     if(this.state.isLoading){
       return (
@@ -54,17 +89,43 @@ class index extends Component {
       <div>
         <Container Style="margin-top:100px;margin-bottom:100px;">
           <TableContainer Style="width:75%;margin: auto;" component={Paper}>
+          <Slider
+          Style="margin-top:50px;margin-left:3%;margin-right:3%;width:94%"
+          defaultValue={5}
+          getAriaValueText={this.valuetext}
+          aria-labelledby="interval-slider"
+          valueLabelDisplay="auto"
+          onChange={this.updateInterval}
+          min={0}
+          max={100}
+        />
           <Table aria-label="simple table">
             <TableBody>
               <TableRow>
-                <TableCell>
+                <TableCell align="right">
                 Tracker ID
                 </TableCell>
                 <TableCell>{this.state.stats.stats.tracker_id}
                 </TableCell>
               </TableRow>
               <TableRow>
+                <TableCell align="right">
+                Uptime
+                </TableCell>
                 <TableCell>
+                {Math.floor(this.state.stats.stats.uptime[0]/3600)} Hours
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell align="right">
+                Peers
+                </TableCell>
+                <TableCell>
+                {this.state.stats.stats.peers[0].count[0]}
+                </TableCell>
+              </TableRow>
+              <TableRow>
+                <TableCell align="right">
                 Torrents Count
                 </TableCell>
                 <TableCell>
@@ -72,7 +133,7 @@ class index extends Component {
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>
+                <TableCell align="right">
                 Seeds
                 </TableCell>
                 <TableCell>
@@ -80,7 +141,7 @@ class index extends Component {
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>
+                <TableCell align="right">
                 Completed
                 </TableCell>
                 <TableCell>
@@ -88,7 +149,7 @@ class index extends Component {
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>
+                <TableCell align="right">
                 TCP Connections
                 </TableCell>
                 <TableCell>
@@ -98,7 +159,7 @@ class index extends Component {
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>
+                <TableCell align="right">
                 UDP Connections
                 </TableCell>
                 <TableCell>
@@ -109,7 +170,7 @@ class index extends Component {
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>
+                <TableCell align="right">
                 Livesync Connections
                 </TableCell>
                 <TableCell>
@@ -117,7 +178,7 @@ class index extends Component {
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>
+                <TableCell align="right">
                 Debug-Renew
                 </TableCell>
                 <TableCell>
@@ -127,7 +188,7 @@ class index extends Component {
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>
+                <TableCell align="right">
                 Debug-HTTP Error
                 </TableCell>
                 <TableCell>
@@ -137,7 +198,7 @@ class index extends Component {
                 </TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>
+                <TableCell align="right">
                 Debug-Mutex Stall
                 </TableCell>
                 <TableCell>
